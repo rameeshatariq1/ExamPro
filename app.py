@@ -1,7 +1,3 @@
-# app.py
-# Online Examination & Result System - Frontend (Streamlit)
-# Run: streamlit run app.py
-
 import streamlit as st
 import time
 import pandas as pd
@@ -14,10 +10,6 @@ from backend import (
     leaderboard_report, student_history_report,
     get_all_students, MCQQuestion, ShortAnswerQuestion
 )
-
-# ─────────────────────────────────────────────
-#  PAGE CONFIG & CSS
-# ─────────────────────────────────────────────
 
 st.set_page_config(
     page_title="ExamPro",
@@ -92,10 +84,6 @@ html, body, [data-testid="stApp"] {
 </style>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────
-#  INIT
-# ─────────────────────────────────────────────
-
 @st.cache_resource
 def startup():
     init_db()
@@ -111,15 +99,8 @@ for k, v in {"logged_in": False, "student_id": None, "student_name": "",
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ─────────────────────────────────────────────
-#  LOGIN KEYWORDS
-# ─────────────────────────────────────────────
-STUDENT_KEYWORD = "student"   # username must contain this → student portal
-TEACHER_KEYWORD = "teacher"   # username must contain this → teacher/admin panel
-
-# ─────────────────────────────────────────────
-#  SIDEBAR
-# ─────────────────────────────────────────────
+STUDENT_KEYWORD = "student" 
+TEACHER_KEYWORD = "teacher"  
 
 with st.sidebar:
     st.markdown("## 🎓 ExamPro")
@@ -152,12 +133,7 @@ with st.sidebar:
         if st.button("Login",    use_container_width=True): st.session_state.page = "auth";  st.rerun()
 
     st.markdown("---")
-
-
-# ─────────────────────────────────────────────
-#  HELPER
-# ─────────────────────────────────────────────
-
+    
 def go(page):
     st.session_state.page = page
     st.rerun()
@@ -165,10 +141,6 @@ def go(page):
 def grade_color(grade):
     return {"A+":"green","A":"green","B":"blue","C":"yellow","D":"yellow","F":"red"}.get(grade,"blue")
 
-
-# ─────────────────────────────────────────────
-#  PAGE: HOME
-# ─────────────────────────────────────────────
 
 def page_home():
     if st.session_state.logged_in:
@@ -252,11 +224,6 @@ def page_home():
         with col:
             if st.button("Get Started", use_container_width=True): go("auth")
 
-
-# ─────────────────────────────────────────────
-#  PAGE: AUTH  —  Dynamic login (keyword-based)
-# ─────────────────────────────────────────────
-
 def page_auth():
     st.markdown("## Login")
     col, _ = st.columns([1.2, 1])
@@ -278,7 +245,6 @@ def page_auth():
                         f"or **'{TEACHER_KEYWORD}'** (for teacher access)."
                     )
                 elif has_teacher:
-                    # Teacher login — any password works
                     display_name = username.strip()
                     st.session_state.logged_in    = True
                     st.session_state.student_id   = -1
@@ -286,12 +252,9 @@ def page_auth():
                     st.session_state.is_admin     = True
                     go("admin")
                 else:
-                    # Student login — any password works; name derived from username
                     display_name = username.strip()
-                    # Register them on-the-fly if not already in DB (using username as email key)
                     fake_email = f"{username.strip().lower().replace(' ', '_')}@exampro.local"
                     from backend import register_student as _reg, login_student as _login, get_conn
-                    # Try to find existing by fake email
                     with get_conn() as conn:
                         row = conn.execute(
                             "SELECT * FROM students WHERE email=?", (fake_email,)
@@ -327,12 +290,7 @@ def page_auth():
             
         </div>
         """, unsafe_allow_html=True)
-
-
-# ─────────────────────────────────────────────
-#  PAGE: EXAMS LIST
-# ─────────────────────────────────────────────
-
+        
 def page_exams():
     st.markdown("## Available Exams")
     sid   = st.session_state.student_id
@@ -379,10 +337,6 @@ def page_exams():
                 if st.button("Result", key=f"res_{exam['exam_id']}", use_container_width=True):
                     go("results")
 
-
-# ─────────────────────────────────────────────
-#  PAGE: TAKE EXAM  (timer + questions)
-# ─────────────────────────────────────────────
 
 def page_take_exam():
     exam_id = st.session_state.active_exam
@@ -543,11 +497,6 @@ def _show_result_card(card):
             st.session_state.exam_done = False
             go("results")
 
-
-# ─────────────────────────────────────────────
-#  PAGE: RESULTS
-# ─────────────────────────────────────────────
-
 def page_results():
     st.markdown("## My Results")
     sid     = st.session_state.student_id
@@ -601,11 +550,6 @@ def page_results():
     if st.button("📄 Download Text Report"):
         report = student_history_report(sid)
         st.code(report, language="text")
-
-
-# ─────────────────────────────────────────────
-#  PAGE: ANALYTICS
-# ─────────────────────────────────────────────
 
 def page_analytics():
     st.markdown("## My Analytics")
@@ -679,16 +623,10 @@ def page_analytics():
             </div>
             """, unsafe_allow_html=True)
 
-
-# ─────────────────────────────────────────────
-#  PAGE: ADMIN / TEACHER PANEL
-# ─────────────────────────────────────────────
-
 def page_admin():
     st.markdown("## Teacher Panel")
     tab1, tab2, tab3 = st.tabs(["Overview", "Create Exam", "Manage & Edit Exams"])
 
-    # ── Overview ──────────────────────────────
     with tab1:
         exams    = get_all_exams()
         students = get_all_students()
@@ -724,7 +662,6 @@ def page_admin():
             with st.expander(f"🏆 {exam['title']}"):
                 st.code(leaderboard_report(exam["exam_id"]), language="text")
 
-    # ── Create Exam ───────────────────────────
     with tab2:
         st.markdown("#### Create a New Exam")
         title    = st.text_input("Exam Title",   placeholder="e.g. Python Quiz")
@@ -779,7 +716,6 @@ def page_admin():
                 st.success(f"Exam '{title}' created!")
                 st.rerun()
 
-    # ── Manage & Edit Exams ───────────────────
     with tab3:
         exams = get_all_exams()
         for exam in exams:
@@ -793,7 +729,6 @@ def page_admin():
                 c3.metric("Duration",    f"{exam['duration_minutes']} min")
                 c4.metric("Avg Score",   f"{avg_e}%" if exam_results else "—")
 
-                # ── EDIT SECTION ──────────────────────────
                 st.markdown("---")
                 st.markdown("#### Edit Exam Settings")
 
@@ -873,10 +808,6 @@ def page_admin():
                         st.success("Deleted.")
                         st.rerun()
 
-
-# ─────────────────────────────────────────────
-#  ROUTER
-# ─────────────────────────────────────────────
 
 page = st.session_state.page
 
