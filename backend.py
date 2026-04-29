@@ -1,7 +1,3 @@
-# backend.py
-# Online Examination & Result System - Backend
-# Concepts: Abstract Class, Singleton Logger, SQLite, JSON, Tabulate
-
 import sqlite3
 import json
 import hashlib
@@ -11,10 +7,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from tabulate import tabulate
 
-
-# ─────────────────────────────────────────────
-#  1. SINGLETON LOGGER
-# ─────────────────────────────────────────────
 
 class ExamLogger:
     """Singleton pattern — only ONE logger instance ever exists."""
@@ -38,10 +30,6 @@ class ExamLogger:
 
 logger = ExamLogger()  # Only one instance, always
 
-
-# ─────────────────────────────────────────────
-#  2. ABSTRACT QUESTION CLASS
-# ─────────────────────────────────────────────
 
 class Question(ABC):
     """Abstract base class — all question types must implement grade()."""
@@ -119,11 +107,6 @@ class ShortAnswerQuestion(Question):
             "keywords": self.keywords, "sample_answer": self.sample_answer
         }
 
-
-# ─────────────────────────────────────────────
-#  3. DATABASE (SQLite)
-# ─────────────────────────────────────────────
-
 DB_PATH = "data/exam_system.db"
 
 
@@ -164,9 +147,6 @@ def init_db():
         """)
     logger.info("Database ready.")
 
-
-# ── Student helpers ──────────────────────────
-
 def hash_pw(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -199,10 +179,7 @@ def get_all_students():
     with get_conn() as conn:
         rows = conn.execute("SELECT * FROM students ORDER BY name").fetchall()
     return [dict(r) for r in rows]
-
-
-# ── Exam helpers ─────────────────────────────
-
+    
 def _parse_questions(json_str):
     questions = []
     for d in json.loads(json_str):
@@ -266,9 +243,6 @@ def update_exam(exam_id, title, subject, duration_minutes, questions):
         )
     logger.info(f"Exam updated: id={exam_id} title={title}")
 
-
-# ── Result helpers ───────────────────────────
-
 def save_result(student_id, exam_id, answers, scores, total_score, total_marks, time_taken):
     with get_conn() as conn:
         cur = conn.execute(
@@ -328,11 +302,6 @@ def _calc_grade(pct):
     if pct >= 50: return "D"
     return "F"
 
-
-# ─────────────────────────────────────────────
-#  4. ANALYTICS
-# ─────────────────────────────────────────────
-
 def student_analytics(student_id):
     results = get_student_results(student_id)
     if not results:
@@ -358,11 +327,6 @@ def topic_scores(student_id):
             pct = (awarded / q.marks * 100) if q.marks else 0
             topic_data.setdefault(q.topic, []).append(pct)
     return {t: round(statistics.mean(v), 1) for t, v in topic_data.items()}
-
-
-# ─────────────────────────────────────────────
-#  5. TABULATE REPORTS
-# ─────────────────────────────────────────────
 
 def leaderboard_report(exam_id):
     results = get_exam_results(exam_id)
@@ -395,11 +359,6 @@ def student_history_report(student_id):
         headers=["Exam","Score","%","Grade","Status","Date"],
         tablefmt="rounded_outline")
 
-
-# ─────────────────────────────────────────────
-#  6. SEED DATA (runs once)
-# ─────────────────────────────────────────────
-
 def seed_data():
     if get_all_exams():
         return  # Already seeded
@@ -407,7 +366,6 @@ def seed_data():
     # Demo student
     register_student("Demo Student", "demo@test.com", "demo1234")
 
-    # Exam 1: Python
     python_qs = [
         MCQQuestion(1, "Which keyword defines a function in Python?", 2, "Syntax",
                     ["func", "define", "def", "function"], 2),
@@ -423,7 +381,6 @@ def seed_data():
     ]
     save_exam("Python Fundamentals", "Computer Science", 20, python_qs)
 
-    # Exam 2: Data Structures
     ds_qs = [
         MCQQuestion(1, "Which data structure uses LIFO ordering?", 2, "Stacks",
                     ["Queue", "Stack", "Heap", "Array"], 1),
