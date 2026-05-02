@@ -2,7 +2,7 @@
 
 A web-based exam platform built with Python and Streamlit. Students can take timed MCQ and short-answer exams, and teachers can create, edit, and monitor them — all through a browser interface with no separate server setup required.
 
-**Live Demo:** [exampro.streamlit.app](https://exampro.streamlit.app) 
+**Live Demo:** [exampro.streamlit.app](https://examprooo.streamlit.app/) 
 
 ---
 
@@ -94,7 +94,7 @@ The app will open in your browser at `http://localhost:8501`
 
 ## Deployment
 
-Deployed on [Streamlit Community Cloud](https://streamlit.io/cloud).
+Deployed on [Streamlit Community Cloud](https://examprooo.streamlit.app/).
 
 ---
 
